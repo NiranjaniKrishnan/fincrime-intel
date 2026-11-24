@@ -1,0 +1,19 @@
+# Python toolbox (anyone can rebuild it)
+.venv/
+__pycache__/
+
+# dbt scratch files (rebuilt on every run)
+target/
+logs/
+dbt_packages/
+.user.yml
+
+# The database (rebuilt by running the pipeline; also too big)
+*.duckdb
+*.duckdb.wal
+
+# Secrets (your Claude API key will go here next lesson)
+.env
+
+# Mac clutter
+.DS_Store

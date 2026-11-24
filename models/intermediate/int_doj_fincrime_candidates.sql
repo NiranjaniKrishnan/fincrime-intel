@@ -1,0 +1,1 @@
+select * from {{ ref('stg_doj_press_releases') }} where is_fincrime_candidate = true

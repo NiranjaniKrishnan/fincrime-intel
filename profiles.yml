@@ -1,0 +1,7 @@
+fincrime_intel:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: fincrime.duckdb
+      threads: 1

@@ -1,0 +1,10 @@
+name: fincrime_intel
+version: '1.0.0'
+profile: fincrime_intel
+
+model-paths: ["models"]
+
+models:
+  fincrime_intel:
+    staging:
+      +materialized: view

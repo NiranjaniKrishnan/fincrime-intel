@@ -1,0 +1,12 @@
+version: 2
+
+models:
+  - name: stg_doj_press_releases
+    columns:
+      - name: release_id
+        tests:
+          - unique
+          - not_null
+      - name: release_date
+        tests:
+          - not_null

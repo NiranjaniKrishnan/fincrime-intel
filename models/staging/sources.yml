@@ -1,0 +1,7 @@
+version: 2
+
+sources:
+  - name: doj
+    schema: main
+    tables:
+      - name: raw_doj_press_releases
