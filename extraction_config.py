@@ -1,8 +1,9 @@
 MODEL = "claude-haiku-5-5"
-
+SCHEMA_VERSION = "v1.2"
 SCHEMA = {
     "type": "object",
     "properties": {
+        "is_enforcement_action": {"type": "boolean"},
         "action_type": {
             "type": "string",
             "enum": ["indictment", "guilty plea", "sentencing", "settlement or consent order",
@@ -38,7 +39,7 @@ SCHEMA = {
         "countries_involved": {"type": "array", "items": {"type": "string"}},
         "summary": {"type": "string"},
     },
-    "required": ["action_type", "entity_name", "entity_type", "violation_type", "control_failures",
+    "required": ["is_enforcement_action", "action_type", "entity_name", "entity_type", "violation_type", "control_failures",
                  "detection_method", "penalty_amount_usd", "penalty_evidence",
                  "remediation_mentioned", "remediation_summary", "countries_involved", "summary"],
     "additionalProperties": False,
@@ -48,6 +49,11 @@ INSTRUCTIONS = """You are a financial crime compliance analyst extracting struct
 from U.S. government enforcement press releases.
 
 Rules:
+- is_enforcement_action: true ONLY if the release announces a specific case against a
+  specific person or organization (charge, indictment, plea, conviction, sentence,
+  settlement, penalty or sanctions designation). false for program or funding
+  announcements, awards, task forces, campaigns or general fraud-awareness releases.
+  If false, still fill the other fields as best you can, using "other" and nulls.
 - Use ONLY information stated in the press release. Never guess or use outside knowledge.
 - If a field is not stated, use null (or an empty list, or "unknown" for detection_method).
 - penalty_amount_usd: fines, civil money penalties or forfeiture ordered against the party,

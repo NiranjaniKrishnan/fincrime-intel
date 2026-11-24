@@ -30,3 +30,11 @@ print(con.sql("""
     FROM raw_extractions
     GROUP BY evidence_valid
 """))
+
+print(con.sql("""
+    SELECT
+        json_extract_string(extraction_json, '$.is_enforcement_action') AS is_case,
+        count(*) AS stories
+    FROM raw_extractions
+    GROUP BY 1
+"""))

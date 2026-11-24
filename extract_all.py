@@ -4,7 +4,7 @@ import duckdb
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
-from extraction_config import MODEL, SCHEMA, INSTRUCTIONS
+from extraction_config import MODEL, SCHEMA, INSTRUCTIONS, SCHEMA_VERSION
 
 MAX_PER_RUN = 25   # safety cap: never more than 25 Claude calls per run
 
@@ -21,6 +21,7 @@ con.execute("""
         extraction_json VARCHAR,
         evidence_valid  BOOLEAN,
         model           VARCHAR,
+        schema_version  VARCHAR,
         input_tokens    INTEGER,
         output_tokens   INTEGER,
         extracted_at    TIMESTAMPTZ
@@ -72,9 +73,9 @@ for release_id, release_date, title, body in to_do:
         form = json.loads(reply)
 
         con.execute(
-            "INSERT INTO raw_extractions VALUES (?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)",
+            "INSERT INTO raw_extractions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, current_timestamp)",
             [release_id, "DOJ", release_date, json.dumps(form), check_evidence(form, body),
-             MODEL, message.usage.input_tokens, message.usage.output_tokens],
+             MODEL, SCHEMA_VERSION, message.usage.input_tokens, message.usage.output_tokens],
         )
         done += 1
         print(f"  ✓ {title[:80]}")
