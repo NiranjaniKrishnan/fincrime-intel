@@ -12,7 +12,7 @@ dbt_packages/
 *.duckdb
 *.duckdb.wal
 
-# Secrets (your Claude API key will go here next lesson)
+# Secrets
 .env
 
 # Mac clutter
