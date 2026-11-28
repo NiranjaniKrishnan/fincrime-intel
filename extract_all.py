@@ -15,7 +15,7 @@ con = duckdb.connect("fincrime.duckdb")
 # ---------- 1. The drawer for filled-in forms ----------
 con.execute("""
     CREATE TABLE IF NOT EXISTS raw_extractions (
-        release_id      VARCHAR PRIMARY KEY,
+        release_id      VARCHAR,
         source          VARCHAR,
         action_date     DATE,
         extraction_json VARCHAR,
@@ -24,7 +24,8 @@ con.execute("""
         schema_version  VARCHAR,
         input_tokens    INTEGER,
         output_tokens   INTEGER,
-        extracted_at    TIMESTAMPTZ
+        extracted_at    TIMESTAMPTZ,
+        PRIMARY KEY (release_id, schema_version)
     )
 """)
 
@@ -34,10 +35,11 @@ to_do = con.execute("""
     FROM int_doj_fincrime_candidates AS c
     LEFT JOIN raw_extractions AS e
         ON c.release_id = e.release_id
+       AND e.schema_version = ?
     WHERE e.release_id IS NULL
     ORDER BY c.release_date DESC
     LIMIT ?
-""", [MAX_PER_RUN]).fetchall()
+""", [SCHEMA_VERSION, MAX_PER_RUN]).fetchall()
 
 print(f"Stories to extract: {len(to_do)}\n")
 
@@ -48,13 +50,22 @@ def squash(text):
     return " ".join(text.split())
 
 
-def check_evidence(form, body):
-    if form["penalty_amount_usd"] is None:
-        return None                       # no penalty → nothing to check
-    if not form["penalty_evidence"]:
-        return False                      # penalty claimed, but no evidence given
-    return squash(form["penalty_evidence"]) in squash(body)
+def quote_found(quote, body):
+    return bool(quote) and squash(quote) in squash(body)
 
+
+def check_evidence(form, body):
+    checks = []
+    if form["penalty_amount_usd"] is not None:
+        checks.append(quote_found(form["penalty_evidence"], body))
+    if form["money_laundering"]:
+        checks.append(quote_found(form["money_laundering_evidence"], body))
+    if form["terrorist_financing"]:
+        checks.append(quote_found(form["terrorist_financing_evidence"], body))
+
+    if not checks:
+        return None          # nothing claimed → nothing to check
+    return all(checks)       # every claim must be backed by a real quote
 
 # ---------- 4. Extract each story, saving as we go ----------
 done = 0
